@@ -34,3 +34,5 @@ The game is made on Xubuntu Linux and using mostly open-source tools:
 All sounds are from [freesound.org](https://freesound.org/) (CC0).
 
 This source code is released under [MIT license](https://github.com/fractilegames/mazeflyer/blob/master/LICENSE).
+
+The game is available on Itch.io: https://fractilegames.itch.io/maze-flyer
