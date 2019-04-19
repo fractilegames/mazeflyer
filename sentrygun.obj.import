@@ -1,0 +1,18 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/sentrygun.obj-d3192fe45043e84afed583ddb50119a4.mesh"
+
+[deps]
+
+files=[ "res://.import/sentrygun.obj-d3192fe45043e84afed583ddb50119a4.mesh" ]
+
+source_file="res://sentrygun.obj"
+dest_files=[ "res://.import/sentrygun.obj-d3192fe45043e84afed583ddb50119a4.mesh", "res://.import/sentrygun.obj-d3192fe45043e84afed583ddb50119a4.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )
+optimize_mesh=true

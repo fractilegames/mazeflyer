@@ -1,0 +1,70 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://player.gd" type="Script" id=1]
+[ext_resource path="res://playershoot.wav" type="AudioStream" id=2]
+[ext_resource path="res://thruster.wav" type="AudioStream" id=3]
+[ext_resource path="res://damage.wav" type="AudioStream" id=4]
+
+[sub_resource type="PhysicsMaterial" id=1]
+friction = 0.0
+
+[sub_resource type="SphereShape" id=2]
+radius = 0.4
+
+[sub_resource type="Environment" id=3]
+glow_enabled = true
+glow_intensity = 2.0
+
+[sub_resource type="CubeMesh" id=4]
+size = Vector3( 0.6, 0.6, 0.6 )
+
+[sub_resource type="SpatialMaterial" id=5]
+albedo_color = Color( 0, 0.196078, 0.658824, 1 )
+
+[node name="RigidBody" type="RigidBody"]
+mass = 10.0
+physics_material_override = SubResource( 1 )
+gravity_scale = 0.0
+can_sleep = false
+script = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+shape = SubResource( 2 )
+
+[node name="Camera" type="Camera" parent="."]
+environment = SubResource( 3 )
+current = true
+
+[node name="Listener" type="Listener" parent="Camera"]
+current = true
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+mesh = SubResource( 4 )
+material/0 = SubResource( 5 )
+
+[node name="SpotLight" type="SpotLight" parent="."]
+spot_range = 10.0
+spot_angle = 60.0
+spot_angle_attenuation = 0.63728
+
+[node name="WeaponLight" type="OmniLight" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.4 )
+omni_range = 12.0
+
+[node name="RayCast" type="RayCast" parent="."]
+enabled = true
+cast_to = Vector3( 0, 0, -10 )
+collision_mask = 3
+
+[node name="Weapon" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.6 )
+
+[node name="ShootSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 2 )
+
+[node name="ThrusterSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 3 )
+
+[node name="DamageSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource( 4 )
+
