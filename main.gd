@@ -17,8 +17,7 @@ func _ready():
 	set_process(true)
 	
 	start_match()
-	
-	get_node("ViewportContainer/StartPopup").popup()
+	toggle_menu()
 
 
 func _process(delta):
@@ -46,10 +45,17 @@ func _input(event):
 			get_tree().set_input_as_handled()
 
 			# Toggle pop up
-			if get_node("ViewportContainer/StartPopup").is_visible():
-				get_node("ViewportContainer/StartPopup").hide()
-			else:
-				get_node("ViewportContainer/StartPopup").popup()
+			toggle_menu()
+
+
+func toggle_menu():
+	
+	if get_node("ViewportContainer/StartPopup").is_visible():
+		get_node("ViewportContainer/StartPopup").hide()
+		get_node("Entities/Player").set_active(true)
+	else:
+		get_node("ViewportContainer/StartPopup").popup()
+		get_node("Entities/Player").set_active(false)
 
 
 func on_player_damage():
@@ -63,7 +69,7 @@ func on_player_destruction():
 
 func on_start_button():
 	start_match()
-	get_node("ViewportContainer/StartPopup").hide()
+	toggle_menu()
 
 
 func on_exit_button():
@@ -90,6 +96,7 @@ func start_match():
 	var level_seed = int(get_node("ViewportContainer/StartPopup/GridContainer/SeedSpinBox").value)
 	level.generate(level_size, level_seed)
 	
+	player.set_invert_pitch_control(get_node("ViewportContainer/StartPopup/GridContainer/InvertCheckBox").is_pressed())
 	player.start_match(level.get_start_point(0))
 	
 	initial_enemy_count = 0
@@ -126,5 +133,5 @@ func handle_game_over(var success):
 	else:
 		get_node("ViewportContainer/StartPopup/Label").set_text("You died!")
 		
-	get_node("ViewportContainer/StartPopup").popup()
-	pass
+	toggle_menu()
+

@@ -3,11 +3,14 @@ extends RigidBody
 
 var projectile_scene = preload("res://projectile.tscn")
 var explosion_scene = preload("res://explosion.tscn")
+var control_active = false
 var shoot_delay = 0.0
 var linear_velocity_request = Vector3(0.0, 0.0, 0.0)
 var angular_velocity_request = Vector3(0.0, 0.0, 0.0)
 var shoot_effect = 0.0
 var integrity = 100
+var mouse_delta = Vector2(0.0, 0.0)
+var pitch_control_multiplier = 1.0
 
 
 signal on_damage
@@ -20,52 +23,66 @@ func _ready():
 
 func _process(delta):
 	
-	if Input.is_action_pressed("player_yaw_left"):
-		angular_velocity_request.y = pow(Input.get_action_strength("player_yaw_left"), 2.0) * 3.0
-	elif Input.is_action_pressed("player_yaw_right"):
-		angular_velocity_request.y = pow(Input.get_action_strength("player_yaw_right"), 2.0) * -3.0
+	if control_active:
+		if Input.is_action_pressed("player_yaw_left"):
+			angular_velocity_request.y = pow(Input.get_action_strength("player_yaw_left"), 2.0) * 3.0
+		elif Input.is_action_pressed("player_yaw_right"):
+			angular_velocity_request.y = pow(Input.get_action_strength("player_yaw_right"), 2.0) * -3.0
+		else:
+			angular_velocity_request.y = 0.0
+		
+		if Input.is_action_pressed("player_roll_left"):
+			angular_velocity_request.z = pow(Input.get_action_strength("player_roll_left"), 2.0) * 3.0
+		elif Input.is_action_pressed("player_roll_right"):
+			angular_velocity_request.z = pow(Input.get_action_strength("player_roll_right"), 2.0) * -3.0
+		else:
+			angular_velocity_request.z = 0.0
+		
+		if Input.is_action_pressed("player_pitch_up"):
+			angular_velocity_request.x = pow(Input.get_action_strength("player_pitch_up"), 2.0) * 3.0 * pitch_control_multiplier
+		elif Input.is_action_pressed("player_pitch_down"):
+			angular_velocity_request.x = pow(Input.get_action_strength("player_pitch_down"), 2.0) * -3.0 * pitch_control_multiplier
+		else:
+			angular_velocity_request.x = 0.0
+		
+		if Input.is_action_pressed("player_move_forward"):
+			linear_velocity_request.z = Input.get_action_strength("player_move_forward") * -5.0
+		elif Input.is_action_pressed("player_move_backward"):
+			linear_velocity_request.z = Input.get_action_strength("player_move_backward") * 5.0
+		else:
+			linear_velocity_request.z = 0.0
+		
+		if Input.is_action_pressed("player_move_up"):
+			linear_velocity_request.y = Input.get_action_strength("player_move_up") * 5.0
+		elif Input.is_action_pressed("player_move_down"):
+			linear_velocity_request.y = Input.get_action_strength("player_move_down") * -5.0
+		else:
+			linear_velocity_request.y = 0.0
+		
+		if Input.is_action_pressed("player_move_left"):
+			linear_velocity_request.x = Input.get_action_strength("player_move_left") * -5.0
+		elif Input.is_action_pressed("player_move_right"):
+			linear_velocity_request.x = Input.get_action_strength("player_move_right") * 5.0
+		else:
+			linear_velocity_request.x = 0.0
+			
+		if abs(mouse_delta.y) > 0.01:
+			angular_velocity_request.x = mouse_delta.y / 10 * pitch_control_multiplier
+		if abs(mouse_delta.x) > 0.01:
+			angular_velocity_request.y = mouse_delta.x / -10
+			
+		mouse_delta.y -= mouse_delta.y * clamp(delta * 20.0, 0.0, 1.0)
+		mouse_delta.x -= mouse_delta.x * clamp(delta * 20.0, 0.0, 1.0)
+			
+		if Input.is_action_pressed("player_shoot") and shoot_delay <= 0.0 and is_alive():
+			shoot()
+			shoot_delay = 0.25
 	else:
-		angular_velocity_request.y = 0.0
+		linear_velocity_request = Vector3(0.0, 0.0, 0.0)
+		angular_velocity_request = Vector3(0.0, 0.0, 0.0)
 	
-	if Input.is_action_pressed("player_roll_left"):
-		angular_velocity_request.z = pow(Input.get_action_strength("player_roll_left"), 2.0) * 3.0
-	elif Input.is_action_pressed("player_roll_right"):
-		angular_velocity_request.z = pow(Input.get_action_strength("player_roll_right"), 2.0) * -3.0
-	else:
-		angular_velocity_request.z = 0.0
-	
-	if Input.is_action_pressed("player_pitch_up"):
-		angular_velocity_request.x = pow(Input.get_action_strength("player_pitch_up"), 2.0) * 3.0
-	elif Input.is_action_pressed("player_pitch_down"):
-		angular_velocity_request.x = pow(Input.get_action_strength("player_pitch_down"), 2.0) * -3.0
-	else:
-		angular_velocity_request.x = 0.0
-	
-	if Input.is_action_pressed("player_move_forward"):
-		linear_velocity_request.z = Input.get_action_strength("player_move_forward") * -5.0
-	elif Input.is_action_pressed("player_move_backward"):
-		linear_velocity_request.z = Input.get_action_strength("player_move_backward") * 5.0
-	else:
-		linear_velocity_request.z = 0.0
-	
-	if Input.is_action_pressed("player_move_up"):
-		linear_velocity_request.y = Input.get_action_strength("player_move_up") * 5.0
-	elif Input.is_action_pressed("player_move_down"):
-		linear_velocity_request.y = Input.get_action_strength("player_move_down") * -5.0
-	else:
-		linear_velocity_request.y = 0.0
-	
-	if Input.is_action_pressed("player_move_left"):
-		linear_velocity_request.x = Input.get_action_strength("player_move_left") * -5.0
-	elif Input.is_action_pressed("player_move_right"):
-		linear_velocity_request.x = Input.get_action_strength("player_move_right") * 5.0
-	else:
-		linear_velocity_request.x = 0.0
-	
+	# Update shoot delay timer
 	shoot_delay -= delta
-	if Input.is_action_pressed("player_shoot") and shoot_delay <= 0.0 and is_alive():
-		shoot()
-		shoot_delay = 0.25
 	
 	# Flash weapon light on shoot
 	if shoot_effect > 0.0:
@@ -76,7 +93,7 @@ func _process(delta):
 	get_node("WeaponLight").visible = (shoot_effect > 0.0)
 	
 	# Update thruster sound according to movement requests
-	# TODO: This should be based on actual forces applied so that deceleration couses sound too!
+	# TODO: This should be based on actual forces applied so that deceleration causes sound too!
 	get_node("ThrusterSound").translation = -linear_velocity_request.normalized()
 	if linear_velocity_request.length() > 0.0:
 		get_node("ThrusterSound").max_db = -15
@@ -90,29 +107,14 @@ func _process(delta):
 		get_node("ThrusterSound").play()
 
 
+func _input(event):
+	if control_active:
+		if event is InputEventMouseMotion:
+			mouse_delta += event.get_relative()
+
+
 func _integrate_forces(var state):
 	
-#	var forward = -get_global_transform().basis.z
-#	var right = get_global_transform().basis.x
-#	var up = get_global_transform().basis.y
-	
-#	state.add_central_force(Input.get_action_strength("player_move_forward") * forward * 250)
-#	state.add_central_force(Input.get_action_strength("player_move_backward") * forward * -250)
-#	state.add_central_force(Input.get_action_strength("player_move_up") * up * 250)
-#	state.add_central_force(Input.get_action_strength("player_move_down") * up * -250)
-#	state.add_central_force(Input.get_action_strength("player_move_left") * right * -250)
-#	state.add_central_force(Input.get_action_strength("player_move_right") * right * 250)
-#
-#	state.add_torque(Input.get_action_strength("player_yaw_left") * up * 15)
-#	state.add_torque(Input.get_action_strength("player_yaw_right") * up * -15)
-#	state.add_torque(Input.get_action_strength("player_roll_left") * forward * -15)
-#	state.add_torque(Input.get_action_strength("player_roll_right") * forward * 15)
-#	state.add_torque(Input.get_action_strength("player_pitch_up") * right * 15)
-#	state.add_torque(Input.get_action_strength("player_pitch_down") * right * -15)
-
-	#state.add_central_force(get_linear_velocity() * -50)
-	#state.add_torque(get_angular_velocity() * -10)
-
 	# Apply force to reach requested linear velocity
 	var request = get_global_transform().basis * linear_velocity_request
 	state.add_central_force(Vector3((request.x - state.linear_velocity.x) * 50.0, (request.y - state.linear_velocity.y) * 50.0, (request.z - state.linear_velocity.z) * 50.0))
@@ -163,4 +165,20 @@ func start_match(var position):
 	integrity = 100
 	shoot_effect = 0.0
 	shoot_delay = 0.0
+
+
+func set_active(active):
+	control_active = active
+	if control_active:
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		mouse_delta = Vector2(0.0, 0.0)
+	else:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+
+func set_invert_pitch_control(invert):
+	if invert:
+		pitch_control_multiplier = -1.0
+	else:
+		pitch_control_multiplier = 1.0
 

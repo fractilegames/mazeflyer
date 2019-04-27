@@ -60,12 +60,11 @@ text = "Time: 0"
 align = 2
 
 [node name="StartPopup" type="PopupDialog" parent="ViewportContainer"]
-anchor_right = 1.0
-anchor_bottom = 1.0
+visible = true
 margin_left = 300.0
 margin_top = 200.0
-margin_right = -300.0
-margin_bottom = -200.0
+margin_right = 980.0
+margin_bottom = 520.0
 rect_min_size = Vector2( 500, 300 )
 
 [node name="StartButton" type="Button" parent="ViewportContainer/StartPopup"]
@@ -133,6 +132,18 @@ min_value = 4.0
 max_value = 8.0
 value = 5.0
 rounded = true
+
+[node name="InvertYLabel" type="Label" parent="ViewportContainer/StartPopup/GridContainer"]
+margin_top = 93.0
+margin_right = 456.0
+margin_bottom = 107.0
+text = "Invert pitch control"
+
+[node name="InvertCheckBox" type="CheckBox" parent="ViewportContainer/StartPopup/GridContainer"]
+margin_left = 460.0
+margin_top = 88.0
+margin_right = 660.0
+margin_bottom = 112.0
 
 [node name="Label" type="Label" parent="ViewportContainer/StartPopup"]
 anchor_right = 1.0
